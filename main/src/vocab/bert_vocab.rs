@@ -44,34 +44,34 @@ pub struct BertVocab {
 }
 
 impl BertVocab {
-    /// Returns the PAD token for BERT (`[PAD]`)
+    /// Returns the PAD token for BERT (`<pad>`)
     pub fn pad_value() -> &'static str {
-        "[PAD]"
+        "<pad>"
     }
 
-    /// Returns the SEP token for BERT (`[SEP]`)
+    /// Returns the SEP token for BERT (`<sep>`)
     pub fn sep_value() -> &'static str {
-        "[SEP]"
+        "<sep>"
     }
 
-    /// Returns the CLS token for BERT (`[CLS]`)
+    /// Returns the CLS token for BERT (`<cls>`)
     pub fn cls_value() -> &'static str {
-        "[CLS]"
+        "<cls>"
     }
 
-    /// Returns the MASK token for BERT (`[MASK]`)
+    /// Returns the MASK token for BERT (`<mask>`)
     pub fn mask_value() -> &'static str {
-        "[MASK]"
+        "<mask>"
     }
 }
 
 impl Vocab for BertVocab {
     fn unknown_value() -> &'static str {
-        "[UNK]"
+        "<unk>"
     }
 
     fn get_unknown_value(&self) -> &'static str {
-        "[UNK]"
+        "<unk>"
     }
 
     fn values(&self) -> &HashMap<String, i64> {
@@ -168,12 +168,12 @@ mod tests {
         };
 
         //        Then
-        assert_eq!(base_vocab.unknown_value, "[UNK]");
+        assert_eq!(base_vocab.unknown_value, "<unk>");
         assert_eq!(base_vocab.unknown_value, BertVocab::unknown_value());
-        assert_eq!(BertVocab::pad_value(), "[PAD]");
-        assert_eq!(BertVocab::sep_value(), "[SEP]");
-        assert_eq!(BertVocab::cls_value(), "[CLS]");
-        assert_eq!(BertVocab::mask_value(), "[MASK]");
+        assert_eq!(BertVocab::pad_value(), "<pad>");
+        assert_eq!(BertVocab::sep_value(), "<sep>");
+        assert_eq!(BertVocab::cls_value(), "<cls>");
+        assert_eq!(BertVocab::mask_value(), "<mask>");
         assert_eq!(base_vocab.values, *base_vocab.values());
         assert_eq!(base_vocab.special_values, *base_vocab.special_values());
     }
@@ -184,29 +184,29 @@ mod tests {
         let mut vocab_file = tempfile::NamedTempFile::new()?;
         write!(
             vocab_file,
-            "hello \n world \n [UNK] \n ! \n [CLS] \n [SEP] \n [MASK] \n [PAD]"
+            "hello \n world \n<[UNK> \n ! \n<[CLS> \n<[SEP> \n<[MASK> \n <pad>"
         )?;
         let path = vocab_file.into_temp_path();
         let target_values: HashMap<String, i64> = [
             ("hello".to_owned(), 0),
             ("world".to_owned(), 1),
-            ("[UNK]".to_owned(), 2),
+            ("<unk>".to_owned(), 2),
             ("!".to_owned(), 3),
-            ("[CLS]".to_owned(), 4),
-            ("[SEP]".to_owned(), 5),
-            ("[MASK]".to_owned(), 6),
-            ("[PAD]".to_owned(), 7),
+            ("<cls>".to_owned(), 4),
+            ("<sep>".to_owned(), 5),
+            ("<mask>".to_owned(), 6),
+            ("<pad>".to_owned(), 7),
         ]
         .iter()
         .cloned()
         .collect();
 
         let special_values: HashMap<String, i64> = [
-            ("[UNK]".to_owned(), 2),
-            ("[CLS]".to_owned(), 4),
-            ("[SEP]".to_owned(), 5),
-            ("[MASK]".to_owned(), 6),
-            ("[PAD]".to_owned(), 7),
+            ("<unk>".to_owned(), 2),
+            ("<cls>".to_owned(), 4),
+            ("<sep>".to_owned(), 5),
+            ("<mask>".to_owned(), 6),
+            ("<pad>".to_owned(), 7),
         ]
         .iter()
         .cloned()
@@ -216,7 +216,7 @@ mod tests {
         let base_vocab = BertVocab::from_file(path.to_path_buf().to_str().unwrap())?;
 
         //        Then
-        assert_eq!(base_vocab.unknown_value, "[UNK]");
+        assert_eq!(base_vocab.unknown_value, "<unk>");
         assert_eq!(base_vocab.values, target_values);
         assert_eq!(base_vocab.special_values, special_values);
         drop(path);
@@ -228,7 +228,7 @@ mod tests {
     fn test_create_object_from_file_without_unknown_token() {
         //        Given
         let mut vocab_file = tempfile::NamedTempFile::new().unwrap();
-        write!(vocab_file, "hello \n world \n [UNK] \n ! \n [CLS]").unwrap();
+        write!(vocab_file, "hello \n world \n<[UNK> \n ! \n <cls>").unwrap();
         let path = vocab_file.into_temp_path();
 
         //        When & Then
@@ -241,7 +241,7 @@ mod tests {
         let mut vocab_file = tempfile::NamedTempFile::new()?;
         write!(
             vocab_file,
-            "hello \n world \n [UNK] \n ! \n [CLS] \n [SEP] \n [MASK] \n [PAD]"
+            "hello \n world \n<[UNK> \n ! \n<[CLS> \n<[SEP> \n<[MASK> \n <pad>"
         )?;
         let path = vocab_file.into_temp_path();
         let base_vocab = BertVocab::from_file(path.to_path_buf().to_str().unwrap())?;
@@ -250,12 +250,12 @@ mod tests {
         assert_eq!(base_vocab.token_to_id("hello"), 0);
         assert_eq!(base_vocab.token_to_id("world"), 1);
         assert_eq!(base_vocab.token_to_id("!"), 3);
-        assert_eq!(base_vocab.token_to_id("[UNK]"), 2);
+        assert_eq!(base_vocab.token_to_id("<unk>"), 2);
         assert_eq!(base_vocab.token_to_id("oov_value"), 2);
-        assert_eq!(base_vocab.token_to_id("[PAD]"), 7);
-        assert_eq!(base_vocab.token_to_id("[MASK]"), 6);
-        assert_eq!(base_vocab.token_to_id("[CLS]"), 4);
-        assert_eq!(base_vocab.token_to_id("[SEP]"), 5);
+        assert_eq!(base_vocab.token_to_id("<pad>"), 7);
+        assert_eq!(base_vocab.token_to_id("<mask>"), 6);
+        assert_eq!(base_vocab.token_to_id("<cls>"), 4);
+        assert_eq!(base_vocab.token_to_id("<sep>"), 5);
 
         drop(path);
         Ok(())
@@ -267,7 +267,7 @@ mod tests {
         let mut vocab_file = tempfile::NamedTempFile::new()?;
         write!(
             vocab_file,
-            "hello \n world \n [UNK] \n ! \n [CLS] \n [SEP] \n [MASK] \n [PAD]"
+            "hello \n world \n<[UNK> \n ! \n<[CLS> \n<[SEP> \n<[MASK> \n <pad>"
         )?;
         let path = vocab_file.into_temp_path();
         let bert_vocab = BertVocab::from_file(path.to_path_buf().to_str().unwrap())?;
@@ -276,11 +276,11 @@ mod tests {
         assert_eq!(bert_vocab.id_to_token(&(0_i64)), "hello");
         assert_eq!(bert_vocab.id_to_token(&(1_i64)), "world");
         assert_eq!(bert_vocab.id_to_token(&(3_i64)), "!");
-        assert_eq!(bert_vocab.id_to_token(&(2_i64)), "[UNK]");
-        assert_eq!(bert_vocab.id_to_token(&(7_i64)), "[PAD]");
-        assert_eq!(bert_vocab.id_to_token(&(6_i64)), "[MASK]");
-        assert_eq!(bert_vocab.id_to_token(&(4_i64)), "[CLS]");
-        assert_eq!(bert_vocab.id_to_token(&(5_i64)), "[SEP]");
+        assert_eq!(bert_vocab.id_to_token(&(2_i64)), "<unk>");
+        assert_eq!(bert_vocab.id_to_token(&(7_i64)), "<pad>");
+        assert_eq!(bert_vocab.id_to_token(&(6_i64)), "<mask>");
+        assert_eq!(bert_vocab.id_to_token(&(4_i64)), "<cls>");
+        assert_eq!(bert_vocab.id_to_token(&(5_i64)), "<sep>");
 
         drop(path);
         Ok(())
